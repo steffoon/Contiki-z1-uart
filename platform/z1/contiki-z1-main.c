@@ -38,12 +38,13 @@
 #include "dev/serial-line.h"
 #include "dev/slip.h"
 #include "dev/uart0.h"
+#include "dev/uart1.h"
 #include "dev/watchdog.h"
 #include "dev/xmem.h"
 #include "lib/random.h"
 #include "net/netstack.h"
 #include "net/mac/frame802154.h"
-#include "dev/adxl345.h"
+//#include "dev/adxl345.h"
 #include "sys/clock.h"
 
 #if NETSTACK_CONF_WITH_IPV6
@@ -201,7 +202,8 @@ main(int argc, char **argv)
   clock_wait(100);
 
   uart0_init(BAUD2UBR(UART0_BAUD_RATE)); /* Must come before first printf */
-#if NETSTACK_CONF_WITH_IPV4
+  uart1_init(BAUD2UBR(UART0_BAUD_RATE)); /* Must come before first printf */
+  #if NETSTACK_CONF_WITH_IPV4
   slip_arch_init(BAUD2UBR(UART0_BAUD_RATE));
 #endif /* NETSTACK_CONF_WITH_IPV4 */
 
@@ -277,7 +279,7 @@ main(int argc, char **argv)
   set_rime_addr();
 
   cc2420_init();
-  SENSORS_ACTIVATE(adxl345);
+  //SENSORS_ACTIVATE(adxl345);
 
   {
     uint8_t longaddr[8];
@@ -370,10 +372,15 @@ main(int argc, char **argv)
          CC2420_CONF_CHANNEL);
 #endif /* NETSTACK_CONF_WITH_IPV6 */
 
-#if !NETSTACK_CONF_WITH_IPV4 && !NETSTACK_CONF_WITH_IPV6
+//#if !NETSTACK_CONF_WITH_IPV4 && !NETSTACK_CONF_WITH_IPV6
+//  uart0_set_input(serial_line_input_byte);
+//  serial_line_init();
+//#endif
+
   uart0_set_input(serial_line_input_byte);
+  uart1_set_input(serial_line_input_byte);
   serial_line_init();
-#endif
+
 
   leds_off(LEDS_GREEN);
 

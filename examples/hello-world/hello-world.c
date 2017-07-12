@@ -38,18 +38,43 @@
  */
 
 #include "contiki.h"
+#include "sys/etimer.h"
+#include "dev/serial-line.h"
 
 #include <stdio.h> /* For printf() */
 /*---------------------------------------------------------------------------*/
 PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
+PROCESS(serial_input_process, "Serial input process");
+AUTOSTART_PROCESSES(&hello_world_process, &serial_input_process);
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(hello_world_process, ev, data)
 {
+
+  static struct etimer et;
   PROCESS_BEGIN();
 
-  printf("Hello, world\n");
-  
+  etimer_set(&et, CLOCK_SECOND);
+
+  while(1){
+	  PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+	  printf("Hello, world\n");
+	  etimer_reset(&et);
+  }
   PROCESS_END();
 }
+
+/*---------------------------------------------------------------------------*/
+PROCESS_THREAD(serial_input_process, ev, data)
+{
+  PROCESS_BEGIN();
+
+  for(;;) {
+    PROCESS_YIELD();
+    if(ev == serial_line_event_message) {
+      printf("received line: %s\n", (char *)data);
+    }
+  }
+  PROCESS_END();
+}
+
 /*---------------------------------------------------------------------------*/
